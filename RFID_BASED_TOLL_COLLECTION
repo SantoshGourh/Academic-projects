@@ -1,0 +1,148 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(A0,A1,A2,A3,A4,A5);
+#define sw1 2
+#define sw2 3
+#define IR 12
+#define green 10
+#define red 11
+#define buzzer 4
+void setup()
+{
+    Serial.begin(9600);
+    pinMode(3,INPUT);
+    pinMode(2,INPUT);
+    pinMode(12,INPUT);
+    pinMode(11,OUTPUT);
+    pinMode(10,OUTPUT);
+    pinMode(8,OUTPUT);
+    pinMode(9,OUTPUT);
+    pinMode(4,OUTPUT);
+
+    lcd.begin(16,2);
+    lcd.clear();
+    lcd.print("WELCOME");
+
+    digitalWrite(red,HIGH);
+    digitalWrite(green,HIGH);
+    delay(1000);
+}
+char card[13];
+int i;
+void loop() 
+{
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
+    digitalWrite(red,HIGH);
+    digitalWrite(green,LOW);
+
+    lcd.setCursor(0,1);
+    lcd.print("PRESS BUTTON");
+
+    if(digitalRead(sw1)==LOW)
+    {
+        lcd.clear();
+        lcd.print("Please Swipe");
+        lcd.setCursor(0,1);
+        lcd.print("Your Card");
+        flush_();
+
+        while(1)
+        {
+            for(i=0; i<12; i++)
+            {
+                while(!Serial.available());
+                card[i]=Serial.read();
+            } 
+
+            card[i]=='\0';
+            lcd.clear();
+            lcd.print(card);
+            delay(1000);
+            break;
+        }
+        if(card[11]=='6')
+        {
+            lcd.clear();
+            lcd.print("OK");
+
+            digitalWrite(8,HIGH);
+            digitalWrite(9,LOW);
+            delay(500);
+
+            digitalWrite(8,LOW);
+            digitalWrite(9,LOW);
+
+            digitalWrite(green,HIGH);
+            digitalWrite(red,LOW);
+            delay(100);
+
+            while(digitalRead(IR)==1);
+            
+            digitalWrite(red,HIGH);
+            digitalWrite(green,LOW);
+
+            while(digitalRead(IR)==0);
+            
+            delay(2000);
+            digitalWrite(8,LOW);
+            digitalWrite(9,HIGH);
+
+            delay(500);
+            digitalWrite(8,LOW);
+            digitalWrite(9,LOW);
+
+        }  
+        else
+        {
+            lcd.clear();
+            lcd.print("NOT valid");
+
+            digitalWrite(buzzer,HIGH); delay(1000);
+            digitalWrite(buzzer,LOW);
+
+            digitalWrite(red,HIGH);
+            digitalWrite(green,LOW);
+            delay(1000);
+        }
+
+    }
+    if(digitalRead(sw2)==LOW)
+    {
+        digitalWrite(8,HIGH);
+        digitalWrite(9,LOW);
+        delay(500);
+
+        digitalWrite(8,LOW);
+        digitalWrite(9,LOW);
+
+        digitalWrite(green,HIGH);
+        digitalWrite(red,LOW);
+        delay(100);
+
+        while(digitalRead(IR)==1);
+
+        digitalWrite(red,HIGH);
+        digitalWrite(green,LOW);
+
+        while(digitalRead(IR)==0);
+
+        delay(2000);
+        digitalWrite(8,LOW);
+        digitalWrite(9,HIGH);
+        
+        delay(500);
+        digitalWrite(8,LOW);
+        digitalWrite(9,LOW);
+    }
+}
+
+
+void flush_()
+{
+    for(int j=0; j<50; j++)
+    {
+        char clear_=Serial.read();
+        delay(1);
+    }
+}
